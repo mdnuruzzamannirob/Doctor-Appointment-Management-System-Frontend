@@ -1,41 +1,83 @@
 "use client";
 
-import { FcGoogle } from "react-icons/fc";
-import { cn } from "@/lib/utils";
-import Logo from "./Logo";
-import Link from "next/link";
-import z from "zod";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
+import { loginSchema, registrationSchema } from "@/lib/auth-schema";
+
+import Logo from "./Logo";
 import FormField from "./FormField";
-import { registrationSchema } from "@/lib/auth-schema";
-import { useState } from "react";
+
+import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa6";
 import { LuLoader } from "react-icons/lu";
+import Link from "next/link";
 
 interface AuthFormProps {
   type?: "login" | "register";
   className?: string;
 }
 
-// Infer TypeScript type from Zod schema
-type AuthFormData = z.infer<typeof registrationSchema>;
+type AuthFormData =
+  | z.infer<typeof loginSchema>
+  | z.infer<typeof registrationSchema>;
 
 const AuthForm = ({ type = "login", className }: AuthFormProps) => {
   const [role, setRole] = useState<"DOCTOR" | "PATIENT">("PATIENT");
 
+  const schema = type === "login" ? loginSchema : registrationSchema;
+
   const {
-    register,
+    register: formRegister,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
   } = useForm<AuthFormData>({
-    resolver: zodResolver(registrationSchema),
-    mode: "onChange", // enables real-time validation
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues:
+      type === "login"
+        ? { email: "", password: "", role }
+        : {
+            role,
+            name: "",
+            email: "",
+            password: "",
+            confirm_password: "",
+            photo_url: "",
+          },
   });
 
-  const onSubmit = (data: AuthFormData) => {
-    console.log("Form data:", data);
-    // TODO: call API for login/signup
+  // Sync role with RHF
+  useEffect(() => {
+    setValue("role", role, { shouldValidate: true });
+    if (role === "PATIENT") {
+      // Clear specialization when role is PATIENT;
+      setValue("specialization", "");
+    }
+  }, [role, setValue]);
+
+  const onSubmit = async (data: AuthFormData) => {
+    console.log(data);
+    try {
+      if (type === "login") {
+        // await login(data );
+        alert("Login successful!");
+      } else {
+        // await register(data );
+        alert("Registration successful!");
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "Something went wrong";
+      alert(message);
+    }
   };
 
   const renderLoginForm = () => (
@@ -45,7 +87,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         id="email"
         type="email"
         placeholder="Enter your email"
-        register={register}
+        register={formRegister}
         errors={errors}
       />
 
@@ -54,24 +96,11 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         id="password"
         type="password"
         placeholder="Enter your password"
-        register={register}
+        register={formRegister}
         errors={errors}
       />
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
-      >
-        {isSubmitting ? (
-          <span className="flex items-center justify-center gap-2">
-            <LuLoader className="animate-spin size-4" />
-            Submitting...
-          </span>
-        ) : (
-          "Login"
-        )}
-      </button>
+      <SubmitButton isSubmitting={isSubmitting} label="Login" />
     </form>
   );
 
@@ -82,7 +111,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         id="name"
         type="text"
         placeholder="Enter your name"
-        register={register}
+        register={formRegister}
         errors={errors}
       />
 
@@ -92,7 +121,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
           id="specialization"
           type="text"
           placeholder="Enter your specialization"
-          register={register}
+          register={formRegister}
           errors={errors}
         />
       )}
@@ -102,7 +131,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         id="email"
         type="email"
         placeholder="Enter your email"
-        register={register}
+        register={formRegister}
         errors={errors}
       />
 
@@ -111,7 +140,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         id="password"
         type="password"
         placeholder="Enter your password"
-        register={register}
+        register={formRegister}
         errors={errors}
       />
 
@@ -120,24 +149,11 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         id="confirm_password"
         type="password"
         placeholder="Confirm your password"
-        register={register}
+        register={formRegister}
         errors={errors}
       />
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
-      >
-        {isSubmitting ? (
-          <span className="flex items-center justify-center gap-2">
-            <LuLoader className="animate-spin size-4" />
-            Submitting...
-          </span>
-        ) : (
-          "Register"
-        )}
-      </button>
+      <SubmitButton isSubmitting={isSubmitting} label="Register" />
     </form>
   );
 
@@ -153,10 +169,12 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
       <div className="max-w-md w-full mx-auto">
         <header className="text-center space-y-2 mb-6">
           <h1 className="text-3xl font-bold text-neutral-800">
-            Create an Account
+            {type === "login" ? "Login to your account" : "Create an Account"}
           </h1>
           <p className="text-muted-foreground">
-            Join now to streamline your experience from day one.
+            {type === "login"
+              ? "Access your dashboard and appointments."
+              : "Join now to streamline your experience from day one."}
           </p>
         </header>
 
@@ -164,60 +182,35 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
           renderLoginForm()
         ) : (
           <>
-            <div className="flex gap-3 w-full justify-center mb-4">
-              {(["PATIENT", "DOCTOR"] as ("DOCTOR" | "PATIENT")[]).map(
-                (option, index) => (
-                  <button
-                    key={index}
-                    className={cn(
-                      "flex-1 py-2 px-3 font-medium transition-all  cursor-pointer capitalize rounded-md border",
-                      role === option
-                        ? "bg-[#208acd] text-white border-transparent"
-                        : "hover:bg-neutral-100"
-                    )}
-                    onClick={() => setRole(option)}
-                  >
-                    {option.toLowerCase()}
-                  </button>
-                )
-              )}
-            </div>
-
-            {/* Render the registration form */}
+            <RoleSelector role={role} setRole={setRole} />
             {renderRegisterForm()}
           </>
         )}
 
-        <div className="flex items-center my-4">
-          <hr className="flex-1 border-neutral-200" />
-          <span className="px-2 text-muted-foreground text-sm">
-            Or Register With
-          </span>
-          <hr className="flex-1 border-neutral-200" />
-        </div>
-
-        <div className="flex gap-3">
-          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
-            <FcGoogle size={20} /> Google
-          </button>
-          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
-            <FaFacebook size={20} className="text-blue-500" /> Facebook
-          </button>
-        </div>
+        <SocialAuthButtons />
 
         <p className="mt-4 text-sm text-center text-muted-foreground">
-          Already Have An Account?{" "}
-          <Link href="/login" className="text-[#208acd] font-semibold">
-            Login
-          </Link>
+          {type === "login" ? (
+            <>
+              Don’t have an account?{" "}
+              <Link href="/register" className="text-[#208acd] font-semibold">
+                Register
+              </Link>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <Link href="/login" className="text-[#208acd] font-semibold">
+                Login
+              </Link>
+            </>
+          )}
         </p>
       </div>
 
       <footer className="text-sm gap-3 text-muted-foreground flex items-center justify-between">
-        <p className="">
-          &copy; {new Date().getFullYear()} Medicare. All rights reserved.
-        </p>
-        <p className="">
+        <p>&copy; {new Date().getFullYear()} Medicare. All rights reserved.</p>
+        <p>
           Made with ❤️ by{" "}
           <Link
             href="https://www.linkedin.com/in/mdnuruzzamannirobdev/"
@@ -232,3 +225,76 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
 };
 
 export default AuthForm;
+
+/* =========================
+   Small Components
+========================= */
+const SubmitButton = ({
+  isSubmitting,
+  label,
+}: {
+  isSubmitting: boolean;
+  label: string;
+}) => (
+  <button
+    type="submit"
+    disabled={isSubmitting}
+    className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
+  >
+    {isSubmitting ? (
+      <span className="flex items-center justify-center gap-2">
+        <LuLoader className="animate-spin size-4" />
+        Submitting...
+      </span>
+    ) : (
+      label
+    )}
+  </button>
+);
+
+const RoleSelector = ({
+  role,
+  setRole,
+}: {
+  role: "DOCTOR" | "PATIENT";
+  setRole: (role: "DOCTOR" | "PATIENT") => void;
+}) => (
+  <div className="flex gap-3 w-full justify-center mb-4">
+    {(["PATIENT", "DOCTOR"] as const).map((option) => (
+      <button
+        key={option}
+        type="button"
+        className={cn(
+          "flex-1 py-2 px-3 font-medium transition-all cursor-pointer capitalize rounded-md border",
+          role === option
+            ? "bg-[#208acd] text-white border-transparent"
+            : "hover:bg-neutral-100"
+        )}
+        onClick={() => setRole(option)}
+      >
+        {option.toLowerCase()}
+      </button>
+    ))}
+  </div>
+);
+
+const SocialAuthButtons = () => (
+  <div>
+    <div className="flex items-center my-4">
+      <hr className="flex-1 border-neutral-200" />
+      <span className="px-2 text-muted-foreground text-sm">
+        Or Continue With
+      </span>
+      <hr className="flex-1 border-neutral-200" />
+    </div>
+
+    <div className="flex gap-3">
+      <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
+        <FcGoogle size={20} /> Google
+      </button>
+      <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
+        <FaFacebook size={20} className="text-blue-500" /> Facebook
+      </button>
+    </div>
+  </div>
+);

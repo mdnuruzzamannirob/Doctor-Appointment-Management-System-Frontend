@@ -6,7 +6,7 @@ import { z } from "zod";
 export const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["doctor", "patient"], "Select a valid role"),
+  role: z.enum(["DOCTOR", "PATIENT"]),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -19,14 +19,17 @@ const baseRegisterSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirm_password: z.string().min(6, "Confirm Password is required"),
-  photo_url: z.string().url("Invalid URL").optional().or(z.literal("")), // optional
+  // allow either a valid URL or an empty string
+  photo_url: z.union([z.string().url(), z.literal("")]).optional(),
 });
 
 /* =========================
    Patient Registration Schema
 ========================= */
 const patientRegisterSchema = baseRegisterSchema
-  .extend({ role: z.literal("patient") })
+  .extend({
+    role: z.literal("PATIENT"),
+  })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirm_password) {
       ctx.addIssue({
@@ -42,7 +45,7 @@ const patientRegisterSchema = baseRegisterSchema
 ========================= */
 const doctorRegisterSchema = baseRegisterSchema
   .extend({
-    role: z.literal("doctor"),
+    role: z.literal("DOCTOR"),
     specialization: z.string().min(1, "Specialization is required"),
   })
   .superRefine((data, ctx) => {
@@ -64,16 +67,3 @@ export const registrationSchema = z.discriminatedUnion("role", [
 ]);
 
 export type RegistrationInput = z.infer<typeof registrationSchema>;
-
-/* =========================
-   Example usage with React Hook Form
-========================= */
-/*
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-const { register, handleSubmit, formState: { errors } } = useForm({
-  resolver: zodResolver(registrationSchema),
-  mode: "onChange", // enables real-time validation
-});
-*/

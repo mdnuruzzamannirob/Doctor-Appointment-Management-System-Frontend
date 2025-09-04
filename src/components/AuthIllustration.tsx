@@ -12,7 +12,7 @@ const AuthIllustration = ({ className }: AuthIllustrationProps) => {
         className
       )}
     >
-      <div className="bg-blue-600 rounded-2xl size-full flex flex-col justify-center p-5">
+      <div className="bg-[#208acd] rounded-2xl size-full flex flex-col justify-center p-5">
         <h2 className="text-2xl font-semibold mb-4">
           Effortlessly manage your team and operations.
         </h2>
