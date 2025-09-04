@@ -8,6 +8,7 @@ import {
   useDoctorRegisterMutation,
 } from "./queries/authQueries";
 import { LoginPayload, RegisterPayload } from "@/types";
+import { removeAuthToken, setAuthToken } from "@/utils/authCookies";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -19,6 +20,9 @@ export const useAuth = () => {
 
   const loginWithRedux = async (data: LoginPayload) => {
     const res = await login.mutateAsync(data);
+    if (res?.data?.token) {
+      setAuthToken(res.data.token); // cookie set
+    }
     dispatch(setUser(res?.data));
     return res;
   };
@@ -33,7 +37,10 @@ export const useAuth = () => {
     return res;
   };
 
-  const logout = () => dispatch(clearUser());
+  const logout = () => {
+    removeAuthToken();
+    dispatch(clearUser());
+  };
 
   return {
     user,

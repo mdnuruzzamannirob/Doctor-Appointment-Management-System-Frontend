@@ -1,5 +1,5 @@
 import axios from "axios";
-import { store } from "@/store/store";
+import { getAuthToken } from "@/utils/authCookies";
 
 const api = axios.create({
   baseURL:
@@ -10,7 +10,7 @@ const api = axios.create({
 
 // Attach token automatically
 api.interceptors.request.use((config) => {
-  const token = store.getState().auth.user?.token;
+  const token = getAuthToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
