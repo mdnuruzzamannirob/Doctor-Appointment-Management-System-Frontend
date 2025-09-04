@@ -12,8 +12,8 @@ import FormField from "./FormField";
 
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa6";
-import { LuLoader } from "react-icons/lu";
 import Link from "next/link";
+import SubmitButton from "./SubmitButton";
 
 interface AuthFormProps {
   type?: "login" | "register";
@@ -28,6 +28,17 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
   const [role, setRole] = useState<"DOCTOR" | "PATIENT">("PATIENT");
 
   const schema = type === "login" ? loginSchema : registrationSchema;
+  const defaultValues =
+    type === "login"
+      ? { email: "", password: "", role }
+      : {
+          role,
+          name: "",
+          email: "",
+          password: "",
+          confirm_password: "",
+          photo_url: "",
+        };
 
   const {
     register: formRegister,
@@ -37,17 +48,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
   } = useForm<AuthFormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues:
-      type === "login"
-        ? { email: "", password: "", role }
-        : {
-            role,
-            name: "",
-            email: "",
-            password: "",
-            confirm_password: "",
-            photo_url: "",
-          },
+    defaultValues,
   });
 
   // Sync role with RHF
@@ -106,6 +107,24 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
 
   const renderRegisterForm = () => (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+      <div className="flex gap-3 w-full justify-center mb-2">
+        {(["PATIENT", "DOCTOR"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={cn(
+              "flex-1 py-2 px-3 font-medium transition-all cursor-pointer capitalize rounded-md border",
+              role === option
+                ? "bg-[#208acd] text-white border-transparent"
+                : "hover:bg-neutral-100"
+            )}
+            onClick={() => setRole(option)}
+          >
+            {option.toLowerCase()}
+          </button>
+        ))}
+      </div>
+
       <FormField
         label="Name"
         id="name"
@@ -178,21 +197,29 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
           </p>
         </header>
 
-        {type === "login" ? (
-          renderLoginForm()
-        ) : (
-          <>
-            <RoleSelector role={role} setRole={setRole} />
-            {renderRegisterForm()}
-          </>
-        )}
+        {type === "login" ? renderLoginForm() : renderRegisterForm()}
 
-        <SocialAuthButtons />
+        <div className="flex items-center my-4">
+          <hr className="flex-1 border-neutral-200" />
+          <span className="px-2 text-muted-foreground text-sm">
+            Or Continue With
+          </span>
+          <hr className="flex-1 border-neutral-200" />
+        </div>
+
+        <div className="flex gap-3">
+          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
+            <FcGoogle size={20} /> Google
+          </button>
+          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
+            <FaFacebook size={20} className="text-blue-500" /> Facebook
+          </button>
+        </div>
 
         <p className="mt-4 text-sm text-center text-muted-foreground">
           {type === "login" ? (
             <>
-              Don’t have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/register" className="text-[#208acd] font-semibold">
                 Register
               </Link>
@@ -225,76 +252,3 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
 };
 
 export default AuthForm;
-
-/* =========================
-   Small Components
-========================= */
-const SubmitButton = ({
-  isSubmitting,
-  label,
-}: {
-  isSubmitting: boolean;
-  label: string;
-}) => (
-  <button
-    type="submit"
-    disabled={isSubmitting}
-    className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
-  >
-    {isSubmitting ? (
-      <span className="flex items-center justify-center gap-2">
-        <LuLoader className="animate-spin size-4" />
-        Submitting...
-      </span>
-    ) : (
-      label
-    )}
-  </button>
-);
-
-const RoleSelector = ({
-  role,
-  setRole,
-}: {
-  role: "DOCTOR" | "PATIENT";
-  setRole: (role: "DOCTOR" | "PATIENT") => void;
-}) => (
-  <div className="flex gap-3 w-full justify-center mb-4">
-    {(["PATIENT", "DOCTOR"] as const).map((option) => (
-      <button
-        key={option}
-        type="button"
-        className={cn(
-          "flex-1 py-2 px-3 font-medium transition-all cursor-pointer capitalize rounded-md border",
-          role === option
-            ? "bg-[#208acd] text-white border-transparent"
-            : "hover:bg-neutral-100"
-        )}
-        onClick={() => setRole(option)}
-      >
-        {option.toLowerCase()}
-      </button>
-    ))}
-  </div>
-);
-
-const SocialAuthButtons = () => (
-  <div>
-    <div className="flex items-center my-4">
-      <hr className="flex-1 border-neutral-200" />
-      <span className="px-2 text-muted-foreground text-sm">
-        Or Continue With
-      </span>
-      <hr className="flex-1 border-neutral-200" />
-    </div>
-
-    <div className="flex gap-3">
-      <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
-        <FcGoogle size={20} /> Google
-      </button>
-      <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
-        <FaFacebook size={20} className="text-blue-500" /> Facebook
-      </button>
-    </div>
-  </div>
-);
