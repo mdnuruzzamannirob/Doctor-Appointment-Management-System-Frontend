@@ -72,9 +72,13 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
       switch (type) {
         case "login":
           const response = await login(data as LoginPayload);
-          reset();
-          // router.push("/");
+          router.push(
+            response?.data?.role === "DOCTOR"
+              ? "/doctor/dashboard"
+              : "/patient/dashboard"
+          );
           toast.success(response?.message || "Login successful!");
+          reset();
           break;
 
         case "register":
@@ -84,11 +88,11 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
               const patientResponse = await patientRegister(
                 data as RegisterPayload
               );
-              reset();
               router.push("/login");
               toast.success(
                 patientResponse?.message || "Registration successful!"
               );
+              reset();
               break;
 
             // Doctor registration
@@ -96,11 +100,11 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
               const doctorResponse = await doctorRegister(
                 data as RegisterPayload
               );
-              reset();
               router.push("/login");
               toast.success(
                 doctorResponse?.message || "Registration successful!"
               );
+              reset();
               break;
 
             default:
