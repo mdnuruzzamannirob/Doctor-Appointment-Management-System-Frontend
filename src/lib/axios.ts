@@ -1,14 +1,16 @@
 import axios from "axios";
-// import { useAuthStore } from "@/store/auth";
+import { store } from "@/store/store";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  withCredentials: false,
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://appointment-manager-node.onrender.com/api/v1",
+  headers: { "Content-Type": "application/json" },
 });
 
+// Attach token automatically
 api.interceptors.request.use((config) => {
-  // const token = useAuthStore.getState().token;
-  const token = null;
+  const token = store.getState().auth.user?.token;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

@@ -1,4 +1,17 @@
 export type Role = "DOCTOR" | "PATIENT";
+export interface LoginPayload {
+  email: string;
+  password: string;
+  role: Role;
+}
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+  specialization?: string;
+  photo_url?: string;
+}
 
 export type User = {
   _id: string;

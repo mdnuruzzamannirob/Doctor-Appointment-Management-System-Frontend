@@ -13,7 +13,10 @@ import FormField from "./FormField";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa6";
 import Link from "next/link";
-import SubmitButton from "./SubmitButton";
+import { useAuth } from "@/hooks/useAuth";
+import { LoginPayload, RegisterPayload } from "@/types";
+import { toast } from "sonner";
+import { LuLoader } from "react-icons/lu";
 
 interface AuthFormProps {
   type?: "login" | "register";
@@ -25,6 +28,8 @@ type AuthFormData =
   | z.infer<typeof registrationSchema>;
 
 const AuthForm = ({ type = "login", className }: AuthFormProps) => {
+  const { login, patientRegister, doctorRegister } = useAuth();
+
   const [role, setRole] = useState<"DOCTOR" | "PATIENT">("PATIENT");
 
   const schema = type === "login" ? loginSchema : registrationSchema;
@@ -61,23 +66,46 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
   }, [role, setValue]);
 
   const onSubmit = async (data: AuthFormData) => {
-    console.log(data);
     try {
-      if (type === "login") {
-        // await login(data );
-        alert("Login successful!");
-      } else {
-        // await register(data );
-        alert("Registration successful!");
+      switch (type) {
+        case "login":
+          const response = await login(data as LoginPayload);
+          toast.success(response?.message || "Login successful!");
+          break;
+
+        case "register":
+          switch (role) {
+            // Patient registration
+            case "PATIENT":
+              const patientResponse = await patientRegister(
+                data as RegisterPayload
+              );
+              toast.success(
+                patientResponse?.message || "Registration successful!"
+              );
+              break;
+
+            // Doctor registration
+            case "DOCTOR":
+              const doctorResponse = await doctorRegister(
+                data as RegisterPayload
+              );
+              toast.success(
+                doctorResponse?.message || "Registration successful!"
+              );
+              break;
+
+            default:
+              break;
+          }
+          break;
+
+        default:
+          break;
       }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : typeof err === "string"
-          ? err
-          : "Something went wrong";
-      alert(message);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Something went wrong";
+      toast.error(message);
     }
   };
 
@@ -101,7 +129,20 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         errors={errors}
       />
 
-      <SubmitButton isSubmitting={isSubmitting} label="Login" />
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
+      >
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <LuLoader className="animate-spin size-4" />
+            Logging in...
+          </span>
+        ) : (
+          "Login"
+        )}
+      </button>
     </form>
   );
 
@@ -172,7 +213,20 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         errors={errors}
       />
 
-      <SubmitButton isSubmitting={isSubmitting} label="Register" />
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
+      >
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <LuLoader className="animate-spin size-4" />
+            Registering...
+          </span>
+        ) : (
+          "Register"
+        )}
+      </button>
     </form>
   );
 

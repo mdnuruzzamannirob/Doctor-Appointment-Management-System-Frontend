@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google"; //Geist_Mono
 import "../styles/globals.css";
 import { ReactNode } from "react";
+import { AppProviders } from "@/components/providers";
+import { Toaster } from "sonner";
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -24,7 +26,10 @@ export default function RootLayout({
         className={`${openSans.className} antialiased`}
         suppressHydrationWarning={false}
       >
-        {children}
+        <AppProviders>
+          {children}
+          <Toaster expand={true} richColors closeButton />
+        </AppProviders>
       </body>
     </html>
   );
