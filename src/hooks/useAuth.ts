@@ -19,19 +19,17 @@ export const useAuth = () => {
 
   const loginWithRedux = async (data: LoginPayload) => {
     const res = await login.mutateAsync(data);
-    dispatch(setUser(res.user));
+    dispatch(setUser(res?.data));
     return res;
   };
 
   const patientRegisterWithRedux = async (data: RegisterPayload) => {
     const res = await patientRegister.mutateAsync(data);
-    dispatch(setUser(res.user));
     return res;
   };
 
   const doctorRegisterWithRedux = async (data: RegisterPayload) => {
     const res = await doctorRegister.mutateAsync(data);
-    dispatch(setUser(res.user));
     return res;
   };
 

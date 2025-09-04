@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LoginPayload, RegisterPayload } from "@/types";
 import { toast } from "sonner";
 import { LuLoader } from "react-icons/lu";
+import { useRouter } from "next/navigation";
 
 interface AuthFormProps {
   type?: "login" | "register";
@@ -28,6 +29,7 @@ type AuthFormData =
   | z.infer<typeof registrationSchema>;
 
 const AuthForm = ({ type = "login", className }: AuthFormProps) => {
+  const router = useRouter();
   const { login, patientRegister, doctorRegister } = useAuth();
 
   const [role, setRole] = useState<"DOCTOR" | "PATIENT">("PATIENT");
@@ -50,6 +52,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    reset,
   } = useForm<AuthFormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
@@ -64,12 +67,13 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
       setValue("specialization", "");
     }
   }, [role, setValue]);
-
   const onSubmit = async (data: AuthFormData) => {
     try {
       switch (type) {
         case "login":
           const response = await login(data as LoginPayload);
+          reset();
+          // router.push("/");
           toast.success(response?.message || "Login successful!");
           break;
 
@@ -80,6 +84,8 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
               const patientResponse = await patientRegister(
                 data as RegisterPayload
               );
+              reset();
+              router.push("/login");
               toast.success(
                 patientResponse?.message || "Registration successful!"
               );
@@ -90,6 +96,8 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
               const doctorResponse = await doctorRegister(
                 data as RegisterPayload
               );
+              reset();
+              router.push("/login");
               toast.success(
                 doctorResponse?.message || "Registration successful!"
               );
@@ -132,7 +140,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
+        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
@@ -154,7 +162,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
             key={option}
             type="button"
             className={cn(
-              "flex-1 py-2 px-3 font-medium transition-all cursor-pointer capitalize rounded-md border",
+              "flex-1 py-2 px-3 font-medium transition-colors cursor-pointer capitalize rounded-md border",
               role === option
                 ? "bg-[#208acd] text-white border-transparent"
                 : "hover:bg-neutral-100"
@@ -216,7 +224,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
+        className="w-full bg-[#208acd] text-sm cursor-pointer text-white py-2 rounded-md hover:bg-[#208acd]/90  transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#208acd]"
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
@@ -262,10 +270,10 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         </div>
 
         <div className="flex gap-3">
-          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
+          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2  transition-colors hover:bg-neutral-100">
             <FcGoogle size={20} /> Google
           </button>
-          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2 transition-all hover:bg-neutral-100">
+          <button className="flex-1 flex cursor-pointer items-center justify-center gap-2 border rounded-md py-2  transition-colors hover:bg-neutral-100">
             <FaFacebook size={20} className="text-blue-500" /> Facebook
           </button>
         </div>

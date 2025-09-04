@@ -14,7 +14,7 @@ export interface RegisterPayload {
 }
 
 export type User = {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: Role;
@@ -23,7 +23,7 @@ export type User = {
 };
 
 export type Doctor = {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   specialization: string;
