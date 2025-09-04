@@ -1,7 +1,9 @@
+import Sidebar from "@/components/Sidebar";
+
 const layout = () => {
   return (
     <div>
-      <h1>Doctor Layout</h1>
+      <Sidebar />
     </div>
   );
 };

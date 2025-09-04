@@ -73,7 +73,7 @@ const AuthForm = ({ type = "login", className }: AuthFormProps) => {
         case "login":
           const response = await login(data as LoginPayload);
           router.push(
-            response?.data?.role === "DOCTOR"
+            response?.data?.user?.role === "DOCTOR"
               ? "/doctor/dashboard"
               : "/patient/dashboard"
           );
