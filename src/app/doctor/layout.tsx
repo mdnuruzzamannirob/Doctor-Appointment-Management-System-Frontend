@@ -53,35 +53,7 @@ const layout = ({ children }: { children: ReactNode }) => {
             },
           ],
         },
-        {
-          name: "Overview",
-          href: "/doctor/overview",
-          icon: <LuLayoutDashboard className="size-full" />,
-          children: [
-            {
-              name: "Overview",
-              href: "/doctor/dashboard/overview",
-              icon: <LuLayoutDashboard className="size-full" />,
-              children: [
-                {
-                  name: "Stats",
-                  href: "/doctor/dashboard/overview/stats",
-                  icon: <LuLayoutDashboard className="size-full" />,
-                },
-                {
-                  name: "Reports",
-                  href: "/doctor/dashboard/overview/reports",
-                  icon: <LuLayoutDashboard className="size-full" />,
-                },
-              ],
-            },
-            {
-              name: "Analytics",
-              href: "/doctor/dashboard/analytics",
-              icon: <LuLayoutDashboard className="size-full" />,
-            },
-          ],
-        },
+
         {
           name: "Next",
           href: "/doctor/overview",
@@ -250,6 +222,16 @@ const layout = ({ children }: { children: ReactNode }) => {
               icon: <LuSettings className="size-full" />,
             },
           ],
+        },
+      ],
+    },
+    {
+      group: "Configurations",
+      items: [
+        {
+          name: "Setting",
+          href: "/doctor/settings",
+          icon: <LuSettings className="size-full" />,
         },
       ],
     },
